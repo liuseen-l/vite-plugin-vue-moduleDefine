@@ -25,10 +25,11 @@
     "vue-tsc": "^1.2.0"
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx,json}": [
-      "prettier --write",
-      "eslint",
-      "git add"
+    "*.{js,json}": [
+      "eslint --cache --fix"
+    ],
+    "*.ts?(x)": [
+      "eslint --cache --fix"
     ]
   }
 }

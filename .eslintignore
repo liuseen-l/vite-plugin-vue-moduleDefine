@@ -1,0 +1,12 @@
+dist/
+node_modules
+node_modules/
+patches/
+types/
+cache/
+docs/
+!/.eslintrc.js
+!/rollup.config.js
+!.test
+.temp
+scripts/setupVitest.ts

@@ -7,7 +7,8 @@
     "prepare": "husky install",
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest -c vitest.config.ts"
   },
   "dependencies": {
     "vue": "^3.2.47"
@@ -15,7 +16,9 @@
   "devDependencies": {
     "@antfu/eslint-config": "^0.38.4",
     "@vitejs/plugin-vue": "^4.1.0",
+    "acorn": "^8.8.2",
     "eslint": "^8.38.0",
+    "estree-walker": "^3.0.3",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.1",
     "rollup": "^3.20.2",

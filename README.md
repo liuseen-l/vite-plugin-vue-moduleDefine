@@ -1,4 +1,4 @@
-## index.ts
+#### index.ts
 ```ts 
 const props = defineProps({
   foo: String
@@ -18,7 +18,7 @@ export {
 }
 ```
 
-## App.vue
+#### App.vue
 ```vue
 <script setup lang="ts">
 import { useNormal, useProps } from 'index.ts'
@@ -32,9 +32,9 @@ useProps()
 </template>
 ```
 
-# Transform Into
+## Transform Into
 
-## index.ts
+#### index.ts
 ```ts 
 function useNormal() {
   console.log('normal')
@@ -45,7 +45,7 @@ export {
 }
 ```
 
-## App.vue
+#### App.vue
 ```vue
 <script setup lang="ts">
 import { useNormal } from 'index.ts'

@@ -4,6 +4,10 @@ const props = defineProps({
   foo: String
 })
 
+function useOther() {
+  useProps()
+}
+
 function useProps() {
   console.log(props.foo)
 }
@@ -13,18 +17,18 @@ function useNormal() {
 }
 
 export {
-  useProps,
-  useNormal
+  useNormal,
+  useOther
 }
 ```
 
 #### App.vue
 ```vue
 <script setup lang="ts">
-import { useNormal, useProps } from 'index.ts'
+import { useNormal, useOther } from 'index.ts'
 
 useNormal()
-useProps()
+useOther()
 </script>
 
 <template>
@@ -36,12 +40,25 @@ useProps()
 
 #### index.ts
 ```ts 
+const props = defineProps({
+  foo: String
+})
+
+function useOther() {
+  useProps()
+}
+
+function useProps() {
+  console.log(props.foo)
+}
+
 function useNormal() {
   console.log('normal')
 }
 
 export {
-  useNormal
+  useNormal,
+  useOther
 }
 ```
 
@@ -54,12 +71,16 @@ const props = defineProps({
   foo: String
 })
 
+function useOther() {
+  useProps()
+}
+
 function useProps() {
   console.log(props.foo)
 }
 
 useNormal()
-useProps()
+useOther()
 </script>
 
 <template>

@@ -1,7 +1,8 @@
 import { parse } from 'acorn'
+import { parse as _parse, compileScript } from '@vue/compiler-sfc'
 
 describe('test ast', () => {
-  test('transfomr', () => {
+  test.skip('transfomr', () => {
     const script = `
     import {a} from 'vue'
     const props = defineProps({
@@ -230,5 +231,220 @@ describe('test ast', () => {
         "type": "Program",
       }
     `)
+  })
+  test('transfomr', () => {
+    const script = `
+    <script setup>
+    import { x } from './x'
+      let a = 1
+      const b = 2
+    function c() {}
+    class d {}
+    </script>
+    <script>
+    import { xx } from './x'
+    let aa = 1
+    const bb = 2
+    function cc() {}
+    class dd {}
+    </script>
+    `
+    const { descriptor } = _parse(script)
+    const content = compileScript(descriptor, { id: 'v' })
+
+    expect(content.imports).toMatchInlineSnapshot(`
+      {
+        "x": {
+          "imported": "x",
+          "isFromSetup": true,
+          "isType": false,
+          "isUsedInTemplate": true,
+          "local": "x",
+          "source": "./x",
+        },
+        "xx": {
+          "imported": "xx",
+          "isFromSetup": false,
+          "isType": false,
+          "isUsedInTemplate": true,
+          "local": "xx",
+          "source": "./x",
+        },
+      }
+    `)
+
+
+    // expect(descriptor).toMatchInlineSnapshot(`
+    //   {
+    //     "cssVars": [],
+    //     "customBlocks": [],
+    //     "filename": "anonymous.vue",
+    //     "script": null,
+    //     "scriptSetup": null,
+    //     "shouldForceReload": [Function],
+    //     "slotted": false,
+    //     "source": "
+    //       <template>
+    //       <div> </div>
+    //   </template>
+
+    //   <script setup>
+    //   </script>
+    //   <style>
+    //   </style>
+
+    //       ",
+    //     "styles": [],
+    //     "template": {
+    //       "ast": {
+    //         "children": [
+    //           {
+    //             "content": "    ",
+    //             "loc": {
+    //               "end": {
+    //                 "column": 5,
+    //                 "line": 3,
+    //                 "offset": 20,
+    //               },
+    //               "source": "
+    //       ",
+    //               "start": {
+    //                 "column": 15,
+    //                 "line": 2,
+    //                 "offset": 15,
+    //               },
+    //             },
+    //             "type": 2,
+    //           },
+    //           {
+    //             "children": [
+    //               {
+    //                 "content": " ",
+    //                 "loc": {
+    //                   "end": {
+    //                     "column": 11,
+    //                     "line": 3,
+    //                     "offset": 26,
+    //                   },
+    //                   "source": " ",
+    //                   "start": {
+    //                     "column": 10,
+    //                     "line": 3,
+    //                     "offset": 25,
+    //                   },
+    //                 },
+    //                 "type": 2,
+    //               },
+    //             ],
+    //             "codegenNode": undefined,
+    //             "isSelfClosing": false,
+    //             "loc": {
+    //               "end": {
+    //                 "column": 17,
+    //                 "line": 3,
+    //                 "offset": 32,
+    //               },
+    //               "source": "<div> </div>",
+    //               "start": {
+    //                 "column": 5,
+    //                 "line": 3,
+    //                 "offset": 20,
+    //               },
+    //             },
+    //             "ns": 0,
+    //             "props": [],
+    //             "tag": "div",
+    //             "tagType": 0,
+    //             "type": 1,
+    //           },
+    //           {
+    //             "content": "
+    //   ",
+    //             "loc": {
+    //               "end": {
+    //                 "column": 1,
+    //                 "line": 4,
+    //                 "offset": 33,
+    //               },
+    //               "source": "
+    //   ",
+    //               "start": {
+    //                 "column": 17,
+    //                 "line": 3,
+    //                 "offset": 32,
+    //               },
+    //             },
+    //             "type": 2,
+    //           },
+    //         ],
+    //         "codegenNode": undefined,
+    //         "isSelfClosing": false,
+    //         "loc": {
+    //           "end": {
+    //             "column": 12,
+    //             "line": 4,
+    //             "offset": 44,
+    //           },
+    //           "source": "<template>
+    //       <div> </div>
+    //   </template>",
+    //           "start": {
+    //             "column": 5,
+    //             "line": 2,
+    //             "offset": 5,
+    //           },
+    //         },
+    //         "ns": 0,
+    //         "props": [],
+    //         "tag": "template",
+    //         "tagType": 0,
+    //         "type": 1,
+    //       },
+    //       "attrs": {},
+    //       "content": "
+    //       <div> </div>
+    //   ",
+    //       "loc": {
+    //         "end": {
+    //           "column": 1,
+    //           "line": 4,
+    //           "offset": 33,
+    //         },
+    //         "source": "
+    //       <div> </div>
+    //   ",
+    //         "start": {
+    //           "column": 15,
+    //           "line": 2,
+    //           "offset": 15,
+    //         },
+    //       },
+    //       "map": {
+    //         "file": "anonymous.vue",
+    //         "mappings": ";IAEI,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC,CAAC,CAAC,CAAC,CAAC",
+    //         "names": [],
+    //         "sourceRoot": "",
+    //         "sources": [
+    //           "anonymous.vue",
+    //         ],
+    //         "sourcesContent": [
+    //           "
+    //       <template>
+    //       <div> </div>
+    //   </template>
+
+    //   <script setup>
+    //   </script>
+    //   <style>
+    //   </style>
+
+    //       ",
+    //         ],
+    //         "version": 3,
+    //       },
+    //       "type": "template",
+    //     },
+    //   }
+    // `)
   })
 })

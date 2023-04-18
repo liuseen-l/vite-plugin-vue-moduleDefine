@@ -18,6 +18,9 @@ devDependencies:
   '@vitejs/plugin-vue':
     specifier: ^4.1.0
     version: 4.1.0(vite@4.2.1)(vue@3.2.47)
+  '@vue/compiler-sfc':
+    specifier: ^3.2.47
+    version: 3.2.47
   acorn:
     specifier: ^8.8.2
     version: 8.8.2

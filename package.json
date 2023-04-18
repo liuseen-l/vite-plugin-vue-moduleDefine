@@ -18,6 +18,7 @@
     "@babel/generator": "^7.21.4",
     "@babel/parser": "^7.21.4",
     "@vitejs/plugin-vue": "^4.1.0",
+    "@vue/compiler-sfc": "^3.2.47",
     "acorn": "^8.8.2",
     "eslint": "^8.38.0",
     "estree-walker": "^3.0.3",

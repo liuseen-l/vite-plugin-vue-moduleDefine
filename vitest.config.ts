@@ -5,5 +5,4 @@ export default defineConfig({
     include: ['tests/index.spec.ts'],
     globals: true,
   },
-
 })

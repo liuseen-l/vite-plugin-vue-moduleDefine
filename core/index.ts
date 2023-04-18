@@ -7,7 +7,7 @@ import path from 'node:path'
 
 
 // 处理 import 
-async function mark(source: string, id: string): Promise<string[]> {
+async function processSetupImports(source: string, id: string): Promise<string[]> {
   const { descriptor } = _parse(source)
   const imports = compileScript(descriptor, { id: 'v' }).imports as object
   const matchImports = Object.keys(imports).filter(key =>
@@ -55,7 +55,7 @@ export default () => {
     transform(code: string, id: string) {
       if (id.endsWith('vue')) {
         // 拿到当前 vue 文件 setup 中导入的所有的ts文件
-        const res = mark(code, id)
+        const res = processSetupImports(code, id)
 
         // 循环遍历
 

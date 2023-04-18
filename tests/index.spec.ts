@@ -235,14 +235,12 @@ describe('test ast', () => {
   test('transfomr', () => {
     const script = `
     <script setup>
-    import { x } from './x'
       let a = 1
       const b = 2
     function c() {}
     class d {}
     </script>
     <script>
-    import { xx } from './x'
     let aa = 1
     const bb = 2
     function cc() {}
@@ -252,24 +250,678 @@ describe('test ast', () => {
     const { descriptor } = _parse(script)
     const content = compileScript(descriptor, { id: 'v' })
 
-    expect(content.imports).toMatchInlineSnapshot(`
+    expect(content).toMatchInlineSnapshot(`
       {
-        "x": {
-          "imported": "x",
-          "isFromSetup": true,
-          "isType": false,
-          "isUsedInTemplate": true,
-          "local": "x",
-          "source": "./x",
+        "attrs": {
+          "setup": true,
         },
-        "xx": {
-          "imported": "xx",
-          "isFromSetup": false,
-          "isType": false,
-          "isUsedInTemplate": true,
-          "local": "xx",
-          "source": "./x",
+        "bindings": {
+          "a": "setup-let",
+          "aa": "setup-let",
+          "b": "setup-const",
+          "bb": "setup-const",
+          "c": "setup-const",
+          "cc": "setup-const",
+          "d": "setup-const",
+          "dd": "setup-const",
         },
+        "content": "let aa = 1
+          const bb = 2
+          function cc() {}
+          class dd {}
+          
+
+      export default {
+        setup(__props, { expose }) {
+        expose();
+
+            let a = 1
+            const b = 2
+          function c() {}
+          class d {}
+          
+      const __returned__ = { get aa() { return aa }, set aa(v) { aa = v }, bb, cc, dd, get a() { return a }, set a(v) { a = v }, b, c, d }
+      Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+      return __returned__
+      }
+
+      }",
+        "imports": {},
+        "loc": {
+          "end": {
+            "column": 5,
+            "line": 7,
+            "offset": 93,
+          },
+          "source": "
+            let a = 1
+            const b = 2
+          function c() {}
+          class d {}
+          ",
+          "start": {
+            "column": 19,
+            "line": 2,
+            "offset": 19,
+          },
+        },
+        "map": SourceMap {
+          "file": null,
+          "mappings": "AAQI,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACd,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AAChB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACpB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACf,CAAC,CAAC,CAAC;;;;;AAXe;AAClB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACf,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACjB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACnB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACd,CAAC,CAAC,CAAC;;;;;;",
+          "names": [],
+          "sources": [
+            "anonymous.vue",
+          ],
+          "sourcesContent": [
+            "
+          <script setup>
+            let a = 1
+            const b = 2
+          function c() {}
+          class d {}
+          </script>
+          <script>
+          let aa = 1
+          const bb = 2
+          function cc() {}
+          class dd {}
+          </script>
+          ",
+          ],
+          "version": 3,
+        },
+        "scriptAst": [
+          Node {
+            "declarations": [
+              Node {
+                "end": 15,
+                "id": Node {
+                  "end": 11,
+                  "loc": SourceLocation {
+                    "end": Position {
+                      "column": 10,
+                      "index": 11,
+                      "line": 2,
+                    },
+                    "filename": undefined,
+                    "identifierName": "aa",
+                    "start": Position {
+                      "column": 8,
+                      "index": 9,
+                      "line": 2,
+                    },
+                  },
+                  "name": "aa",
+                  "start": 9,
+                  "type": "Identifier",
+                },
+                "init": Node {
+                  "end": 15,
+                  "extra": {
+                    "raw": "1",
+                    "rawValue": 1,
+                  },
+                  "loc": SourceLocation {
+                    "end": Position {
+                      "column": 14,
+                      "index": 15,
+                      "line": 2,
+                    },
+                    "filename": undefined,
+                    "identifierName": undefined,
+                    "start": Position {
+                      "column": 13,
+                      "index": 14,
+                      "line": 2,
+                    },
+                  },
+                  "start": 14,
+                  "type": "NumericLiteral",
+                  "value": 1,
+                },
+                "loc": SourceLocation {
+                  "end": Position {
+                    "column": 14,
+                    "index": 15,
+                    "line": 2,
+                  },
+                  "filename": undefined,
+                  "identifierName": undefined,
+                  "start": Position {
+                    "column": 8,
+                    "index": 9,
+                    "line": 2,
+                  },
+                },
+                "start": 9,
+                "type": "VariableDeclarator",
+              },
+            ],
+            "end": 15,
+            "kind": "let",
+            "loc": SourceLocation {
+              "end": Position {
+                "column": 14,
+                "index": 15,
+                "line": 2,
+              },
+              "filename": undefined,
+              "identifierName": undefined,
+              "start": Position {
+                "column": 4,
+                "index": 5,
+                "line": 2,
+              },
+            },
+            "start": 5,
+            "type": "VariableDeclaration",
+          },
+          Node {
+            "declarations": [
+              Node {
+                "end": 32,
+                "id": Node {
+                  "end": 28,
+                  "loc": SourceLocation {
+                    "end": Position {
+                      "column": 12,
+                      "index": 28,
+                      "line": 3,
+                    },
+                    "filename": undefined,
+                    "identifierName": "bb",
+                    "start": Position {
+                      "column": 10,
+                      "index": 26,
+                      "line": 3,
+                    },
+                  },
+                  "name": "bb",
+                  "start": 26,
+                  "type": "Identifier",
+                },
+                "init": Node {
+                  "end": 32,
+                  "extra": {
+                    "raw": "2",
+                    "rawValue": 2,
+                  },
+                  "loc": SourceLocation {
+                    "end": Position {
+                      "column": 16,
+                      "index": 32,
+                      "line": 3,
+                    },
+                    "filename": undefined,
+                    "identifierName": undefined,
+                    "start": Position {
+                      "column": 15,
+                      "index": 31,
+                      "line": 3,
+                    },
+                  },
+                  "start": 31,
+                  "type": "NumericLiteral",
+                  "value": 2,
+                },
+                "loc": SourceLocation {
+                  "end": Position {
+                    "column": 16,
+                    "index": 32,
+                    "line": 3,
+                  },
+                  "filename": undefined,
+                  "identifierName": undefined,
+                  "start": Position {
+                    "column": 10,
+                    "index": 26,
+                    "line": 3,
+                  },
+                },
+                "start": 26,
+                "type": "VariableDeclarator",
+              },
+            ],
+            "end": 32,
+            "kind": "const",
+            "loc": SourceLocation {
+              "end": Position {
+                "column": 16,
+                "index": 32,
+                "line": 3,
+              },
+              "filename": undefined,
+              "identifierName": undefined,
+              "start": Position {
+                "column": 4,
+                "index": 20,
+                "line": 3,
+              },
+            },
+            "start": 20,
+            "type": "VariableDeclaration",
+          },
+          Node {
+            "async": false,
+            "body": Node {
+              "body": [],
+              "directives": [],
+              "end": 53,
+              "loc": SourceLocation {
+                "end": Position {
+                  "column": 20,
+                  "index": 53,
+                  "line": 4,
+                },
+                "filename": undefined,
+                "identifierName": undefined,
+                "start": Position {
+                  "column": 18,
+                  "index": 51,
+                  "line": 4,
+                },
+              },
+              "start": 51,
+              "type": "BlockStatement",
+            },
+            "end": 53,
+            "generator": false,
+            "id": Node {
+              "end": 48,
+              "loc": SourceLocation {
+                "end": Position {
+                  "column": 15,
+                  "index": 48,
+                  "line": 4,
+                },
+                "filename": undefined,
+                "identifierName": "cc",
+                "start": Position {
+                  "column": 13,
+                  "index": 46,
+                  "line": 4,
+                },
+              },
+              "name": "cc",
+              "start": 46,
+              "type": "Identifier",
+            },
+            "loc": SourceLocation {
+              "end": Position {
+                "column": 20,
+                "index": 53,
+                "line": 4,
+              },
+              "filename": undefined,
+              "identifierName": undefined,
+              "start": Position {
+                "column": 4,
+                "index": 37,
+                "line": 4,
+              },
+            },
+            "params": [],
+            "start": 37,
+            "type": "FunctionDeclaration",
+          },
+          Node {
+            "body": Node {
+              "body": [],
+              "end": 69,
+              "loc": SourceLocation {
+                "end": Position {
+                  "column": 15,
+                  "index": 69,
+                  "line": 5,
+                },
+                "filename": undefined,
+                "identifierName": undefined,
+                "start": Position {
+                  "column": 13,
+                  "index": 67,
+                  "line": 5,
+                },
+              },
+              "start": 67,
+              "type": "ClassBody",
+            },
+            "end": 69,
+            "id": Node {
+              "end": 66,
+              "loc": SourceLocation {
+                "end": Position {
+                  "column": 12,
+                  "index": 66,
+                  "line": 5,
+                },
+                "filename": undefined,
+                "identifierName": "dd",
+                "start": Position {
+                  "column": 10,
+                  "index": 64,
+                  "line": 5,
+                },
+              },
+              "name": "dd",
+              "start": 64,
+              "type": "Identifier",
+            },
+            "loc": SourceLocation {
+              "end": Position {
+                "column": 15,
+                "index": 69,
+                "line": 5,
+              },
+              "filename": undefined,
+              "identifierName": undefined,
+              "start": Position {
+                "column": 4,
+                "index": 58,
+                "line": 5,
+              },
+            },
+            "start": 58,
+            "superClass": null,
+            "type": "ClassDeclaration",
+          },
+        ],
+        "scriptSetupAst": [
+          Node {
+            "declarations": [
+              Node {
+                "end": 16,
+                "id": Node {
+                  "end": 12,
+                  "loc": SourceLocation {
+                    "end": Position {
+                      "column": 11,
+                      "index": 12,
+                      "line": 2,
+                    },
+                    "filename": undefined,
+                    "identifierName": "a",
+                    "start": Position {
+                      "column": 10,
+                      "index": 11,
+                      "line": 2,
+                    },
+                  },
+                  "name": "a",
+                  "start": 11,
+                  "type": "Identifier",
+                },
+                "init": Node {
+                  "end": 16,
+                  "extra": {
+                    "raw": "1",
+                    "rawValue": 1,
+                  },
+                  "loc": SourceLocation {
+                    "end": Position {
+                      "column": 15,
+                      "index": 16,
+                      "line": 2,
+                    },
+                    "filename": undefined,
+                    "identifierName": undefined,
+                    "start": Position {
+                      "column": 14,
+                      "index": 15,
+                      "line": 2,
+                    },
+                  },
+                  "start": 15,
+                  "type": "NumericLiteral",
+                  "value": 1,
+                },
+                "loc": SourceLocation {
+                  "end": Position {
+                    "column": 15,
+                    "index": 16,
+                    "line": 2,
+                  },
+                  "filename": undefined,
+                  "identifierName": undefined,
+                  "start": Position {
+                    "column": 10,
+                    "index": 11,
+                    "line": 2,
+                  },
+                },
+                "start": 11,
+                "type": "VariableDeclarator",
+              },
+            ],
+            "end": 16,
+            "kind": "let",
+            "loc": SourceLocation {
+              "end": Position {
+                "column": 15,
+                "index": 16,
+                "line": 2,
+              },
+              "filename": undefined,
+              "identifierName": undefined,
+              "start": Position {
+                "column": 6,
+                "index": 7,
+                "line": 2,
+              },
+            },
+            "start": 7,
+            "type": "VariableDeclaration",
+          },
+          Node {
+            "declarations": [
+              Node {
+                "end": 34,
+                "id": Node {
+                  "end": 30,
+                  "loc": SourceLocation {
+                    "end": Position {
+                      "column": 13,
+                      "index": 30,
+                      "line": 3,
+                    },
+                    "filename": undefined,
+                    "identifierName": "b",
+                    "start": Position {
+                      "column": 12,
+                      "index": 29,
+                      "line": 3,
+                    },
+                  },
+                  "name": "b",
+                  "start": 29,
+                  "type": "Identifier",
+                },
+                "init": Node {
+                  "end": 34,
+                  "extra": {
+                    "raw": "2",
+                    "rawValue": 2,
+                  },
+                  "loc": SourceLocation {
+                    "end": Position {
+                      "column": 17,
+                      "index": 34,
+                      "line": 3,
+                    },
+                    "filename": undefined,
+                    "identifierName": undefined,
+                    "start": Position {
+                      "column": 16,
+                      "index": 33,
+                      "line": 3,
+                    },
+                  },
+                  "start": 33,
+                  "type": "NumericLiteral",
+                  "value": 2,
+                },
+                "loc": SourceLocation {
+                  "end": Position {
+                    "column": 17,
+                    "index": 34,
+                    "line": 3,
+                  },
+                  "filename": undefined,
+                  "identifierName": undefined,
+                  "start": Position {
+                    "column": 12,
+                    "index": 29,
+                    "line": 3,
+                  },
+                },
+                "start": 29,
+                "type": "VariableDeclarator",
+              },
+            ],
+            "end": 34,
+            "kind": "const",
+            "loc": SourceLocation {
+              "end": Position {
+                "column": 17,
+                "index": 34,
+                "line": 3,
+              },
+              "filename": undefined,
+              "identifierName": undefined,
+              "start": Position {
+                "column": 6,
+                "index": 23,
+                "line": 3,
+              },
+            },
+            "start": 23,
+            "type": "VariableDeclaration",
+          },
+          Node {
+            "async": false,
+            "body": Node {
+              "body": [],
+              "directives": [],
+              "end": 54,
+              "loc": SourceLocation {
+                "end": Position {
+                  "column": 19,
+                  "index": 54,
+                  "line": 4,
+                },
+                "filename": undefined,
+                "identifierName": undefined,
+                "start": Position {
+                  "column": 17,
+                  "index": 52,
+                  "line": 4,
+                },
+              },
+              "start": 52,
+              "type": "BlockStatement",
+            },
+            "end": 54,
+            "generator": false,
+            "id": Node {
+              "end": 49,
+              "loc": SourceLocation {
+                "end": Position {
+                  "column": 14,
+                  "index": 49,
+                  "line": 4,
+                },
+                "filename": undefined,
+                "identifierName": "c",
+                "start": Position {
+                  "column": 13,
+                  "index": 48,
+                  "line": 4,
+                },
+              },
+              "name": "c",
+              "start": 48,
+              "type": "Identifier",
+            },
+            "loc": SourceLocation {
+              "end": Position {
+                "column": 19,
+                "index": 54,
+                "line": 4,
+              },
+              "filename": undefined,
+              "identifierName": undefined,
+              "start": Position {
+                "column": 4,
+                "index": 39,
+                "line": 4,
+              },
+            },
+            "params": [],
+            "start": 39,
+            "type": "FunctionDeclaration",
+          },
+          Node {
+            "body": Node {
+              "body": [],
+              "end": 69,
+              "loc": SourceLocation {
+                "end": Position {
+                  "column": 14,
+                  "index": 69,
+                  "line": 5,
+                },
+                "filename": undefined,
+                "identifierName": undefined,
+                "start": Position {
+                  "column": 12,
+                  "index": 67,
+                  "line": 5,
+                },
+              },
+              "start": 67,
+              "type": "ClassBody",
+            },
+            "end": 69,
+            "id": Node {
+              "end": 66,
+              "loc": SourceLocation {
+                "end": Position {
+                  "column": 11,
+                  "index": 66,
+                  "line": 5,
+                },
+                "filename": undefined,
+                "identifierName": "d",
+                "start": Position {
+                  "column": 10,
+                  "index": 65,
+                  "line": 5,
+                },
+              },
+              "name": "d",
+              "start": 65,
+              "type": "Identifier",
+            },
+            "loc": SourceLocation {
+              "end": Position {
+                "column": 14,
+                "index": 69,
+                "line": 5,
+              },
+              "filename": undefined,
+              "identifierName": undefined,
+              "start": Position {
+                "column": 4,
+                "index": 59,
+                "line": 5,
+              },
+            },
+            "start": 59,
+            "superClass": null,
+            "type": "ClassDeclaration",
+          },
+        ],
+        "setup": true,
+        "type": "script",
       }
     `)
 

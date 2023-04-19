@@ -1,8 +1,11 @@
+<script setup lang='ts'>
+
+</script>
+
 <template>
-    <div> </div>
+  <div />
 </template>
 
-<script lang='ts' setup>
-</script>
-<style>
+<style lang='scss' scoped>
+
 </style>

@@ -9,16 +9,24 @@ async function processSetupImports(source: string, id: string): Promise<string[]
   const { descriptor } = _parse(source)
   const imports = compileScript(descriptor, { id: 'v' }).imports as object
   // to match the import with '.' or '..'
-  const matchImports = Object.fromEntries(Object.entries(imports).filter(([key]) =>
-    (imports[key].isFromSetup && imports[key].source.startsWith('.'))
-  ))
+  const matchImports: {
+    [k: string]: { [t: string]: string }[]
+  } = {}
+
+  for (const key of Object.keys(imports)) {
+    const source = imports[key].source
+    if (imports[key].isFromSetup && source.startsWith('.')) {
+      matchImports[source] = matchImports[source] || []
+      matchImports[source].push(imports[key])
+    }
+  }
 
   const reg = /defineProps\(([.\b\s\S]*)\)/
   const markable: string[] = []
 
-  for (const key of Object.keys(matchImports)) {
+  for (const path of Object.keys(matchImports)) {
     // to filter the content without macros
-    const content = await fs.readFile(path.resolve(id, matchImports[key].source), 'utf-8')
+    const content = await fs.readFile(path.resolve('da', path), 'utf-8')
     if (content.match(reg)) {
       compile(content, matchImports[key])
     }
@@ -30,6 +38,14 @@ function generator(ast) {
   const code = generate(ast)
   return code
 }
+
+
+
+function mergeMacros() {
+
+
+}
+
 
 function parse(source: string, importOption) {
   const local = importOption.local

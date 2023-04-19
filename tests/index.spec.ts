@@ -235,8 +235,8 @@ describe('test ast', () => {
   test('transfomr', () => {
     const script = `
     <script setup>
-    import {d as t }from './vue'
-
+    import {d as t ,z}from './vue'
+    import { x}from './react'
       let a = 1
       const b = 2
     function c() {}
@@ -260,6 +260,22 @@ describe('test ast', () => {
           "isType": false,
           "isUsedInTemplate": true,
           "local": "t",
+          "source": "./vue",
+        },
+        "x": {
+          "imported": "x",
+          "isFromSetup": true,
+          "isType": false,
+          "isUsedInTemplate": true,
+          "local": "x",
+          "source": "./react",
+        },
+        "z": {
+          "imported": "z",
+          "isFromSetup": true,
+          "isType": false,
+          "isUsedInTemplate": true,
+          "local": "z",
           "source": "./vue",
         },
       }

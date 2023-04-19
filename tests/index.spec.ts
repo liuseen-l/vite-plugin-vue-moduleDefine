@@ -235,7 +235,7 @@ describe('test ast', () => {
   test('transfomr', () => {
     const script = `
     <script setup>
-    import tesw from './vue'
+    import {d as t }from './vue'
 
       let a = 1
       const b = 2
@@ -254,12 +254,12 @@ describe('test ast', () => {
 
     expect(content.imports).toMatchInlineSnapshot(`
       {
-        "tesw": {
-          "imported": "default",
+        "t": {
+          "imported": "d",
           "isFromSetup": true,
           "isType": false,
           "isUsedInTemplate": true,
-          "local": "tesw",
+          "local": "t",
           "source": "./vue",
         },
       }

@@ -5,10 +5,10 @@ import { parse as _parse, compileScript } from '@vue/compiler-sfc'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-// 处理 import 
 async function processSetupImports(source: string, id: string): Promise<string[]> {
   const { descriptor } = _parse(source)
   const imports = compileScript(descriptor, { id: 'v' }).imports as object
+  // to match the import with '.' or '..'
   const matchImports = Object.fromEntries(Object.entries(imports).filter(([key]) =>
     (imports[key].isFromSetup && imports[key].source.startsWith('.'))
   ))
@@ -17,21 +17,23 @@ async function processSetupImports(source: string, id: string): Promise<string[]
   const markable: string[] = []
 
   for (const key of Object.keys(matchImports)) {
-    const content = await fs.readFile(path.resolve(id, imports[key].source), 'utf-8')
+    // to filter the content without macros
+    const content = await fs.readFile(path.resolve(id, matchImports[key].source), 'utf-8')
     if (content.match(reg)) {
-      // compile the match file from .vue
-      compile(content)
+      compile(content, matchImports[key])
     }
   }
   return markable
 }
 
-function generator(ast): string {
+function generator(ast) {
   const code = generate(ast)
   return code
 }
 
-function parse(source: string) {
+function parse(source: string, importOption) {
+  const local = importOption.local
+  const imported = importOption.imported
   const ast = baseParse(source)
     ; (walk as any)(ast, {
       enter(node: Node, parent?: Node) {
@@ -47,8 +49,8 @@ function parse(source: string) {
 }
 
 
-function compile(source: string) {
-  const ast = parse(source)
+function compile(source: string, importOption) {
+  const ast = parse(source, importOption)
 
 }
 

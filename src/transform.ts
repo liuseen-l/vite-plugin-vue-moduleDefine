@@ -1,5 +1,5 @@
-import fs from 'node:fs/promises'
 import path from 'node:path'
+import fs from 'node:fs/promises'
 import type { ParseResult } from '@babel/parser'
 import { parse as baseParse } from '@babel/parser'
 import generate from '@babel/generator'
@@ -9,19 +9,35 @@ import type * as _babel_types from '@babel/types'
 
 const reg = /defineProps\(([.\r\b\s\S\n]*)\)/
 
-async function processSetupImports(source: string, id: string): Promise<string[]> {
-  const { descriptor } = _parse(source)
-  const imports = compileScript(descriptor, { id: 'v' }).imports
-  const matchImports = Object.keys(imports as object).filter(key =>
-    imports![key].isFromSetup && key.startsWith('.'))
+interface ImportBinding {
+  isType: boolean
+  imported: string
+  local: string
+  source: string
+  isFromSetup: boolean
+  isUsedInTemplate: boolean
+}
 
-  const resolvePaths: string[] = []
-  for (const match of matchImports) {
-    const content = await fs.readFile(path.resolve(__dirname, id), 'utf-8')
-    content.match(reg) && resolvePaths.push(match)
+async function processSetupImports(source: string, id: string): Promise<void> {
+  const { descriptor } = _parse(source)
+  const imports = compileScript(descriptor, { id: 'v' }).imports!
+  // to match the import with '.' or '..'
+  const matchImports: {
+    [k: string]: ImportBinding[]
+  } = {}
+  for (const key of Object.keys(imports)) {
+    const source = imports[key].source
+    if (imports[key].isFromSetup && source.startsWith('.')) {
+      matchImports[source] = matchImports[source] || []
+      matchImports[source].push(imports[key])
+    }
   }
 
-  return ['da']
+  for (const resolvePath of Object.keys(matchImports)) {
+    const content = await fs.readFile(path.resolve(id, resolvePath), 'utf-8')
+    if (content.match(reg))
+      compile(content, matchImports[resolvePath])
+  }
 }
 
 function generator(ast: ParseResult<_babel_types.File>): string {
@@ -29,7 +45,9 @@ function generator(ast: ParseResult<_babel_types.File>): string {
   return generation.code
 }
 
-function parser(source: string) {
+function parse(source: string, importOption: ImportBinding[]) {
+  const localList: string[] = importOption.map(i => i.local)
+  const importedList: string[] = importOption.map(i => i.imported)
   const ast = baseParse(source)
     ; (walk as any)(ast, {
     enter(node: Node, parent?: Node) {
@@ -43,9 +61,8 @@ function parser(source: string) {
   })
   generator(ast)
 }
-
-function compile(source: string) {
-  const ast = parser(source)
+function compile(source: string, importOption: ImportBinding[]) {
+  const ast = parse(source, importOption)
 }
 
 export async function transform(code: string, id: string) {

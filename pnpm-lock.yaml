@@ -15,9 +15,12 @@ devDependencies:
   '@babel/parser':
     specifier: ^7.21.4
     version: 7.21.4
+<<<<<<< HEAD
   '@babel/types':
     specifier: ^7.21.4
     version: 7.21.4
+=======
+>>>>>>> 7ebbc41bb45ee1d4da07fbae5fcba1130863e3a2
   '@types/babel__generator':
     specifier: ^7.6.4
     version: 7.6.4

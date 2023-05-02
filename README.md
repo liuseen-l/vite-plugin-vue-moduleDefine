@@ -4,11 +4,19 @@ const props = defineProps({
   foo: String
 })
 
-function useOther() {
-  useProps()
+function $useArrow() {
+  $useProps()
 }
 
-function useProps() {
+const $useFun = function () {
+  $useProps()
+}
+
+function $useOther() {
+  $useProps()
+}
+
+function $useProps() {
   console.log(props.foo)
 }
 
@@ -18,17 +26,21 @@ function useNormal() {
 
 export {
   useNormal,
-  useOther
+  $useOther,
+  $useArrow,
+  $useFun
 }
 ```
 
 #### App.vue
 ```vue
 <script setup lang="ts">
-import { useNormal, useOther } from 'index.ts'
+import { $useArrow, $useFun, $useOther, useNormal } from 'index.ts'
 
 useNormal()
-useOther()
+$useOther()
+$useArrow()
+$useFun()
 </script>
 
 <template>
@@ -44,11 +56,19 @@ const props = defineProps({
   foo: String
 })
 
-function useOther() {
-  useProps()
+function $useArrow() {
+  $useProps()
 }
 
-function useProps() {
+const $useFun = function () {
+  $useProps()
+}
+
+function $useOther() {
+  $useProps()
+}
+
+function $useProps() {
   console.log(props.foo)
 }
 
@@ -58,7 +78,9 @@ function useNormal() {
 
 export {
   useNormal,
-  useOther
+  $useOther,
+  $useArrow,
+  $useFun
 }
 ```
 
@@ -71,16 +93,26 @@ const props = defineProps({
   foo: String
 })
 
-function useOther() {
-  useProps()
+function $useArrow() {
+  $useProps()
 }
 
-function useProps() {
+const $useFun = function () {
+  $useProps()
+}
+
+function $useOther() {
+  $useProps()
+}
+
+function $useProps() {
   console.log(props.foo)
 }
 
 useNormal()
-useOther()
+$useOther()
+$useArrow()
+$useFun()
 </script>
 
 <template>

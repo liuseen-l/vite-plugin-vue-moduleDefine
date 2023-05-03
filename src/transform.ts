@@ -6,7 +6,7 @@ import { parse as _parse, compileScript } from '@vue/compiler-sfc'
 import type { File, Node as _Node } from '@babel/types'
 import generate from '@babel/generator'
 import type { TreeMark } from '../utils'
-import { isFunctionDeclaration, isIdentifier, isVariableDeclaration, isVariableDeclarator } from '../utils'
+import { isBlockStatement, isFunctionDeclaration, isIdentifier, isVariableDeclaration, isVariableDeclarator } from '../utils'
 
 type Node = _Node & TreeMark
 
@@ -67,8 +67,10 @@ function codegen(res: WalkParse) {
       nodeList.add(o)
       if (o.childIdent) {
         o.childIdent.delete(i)
-        if (o.childIdent.size > 0)
+        if (o.childIdent.size > 0) {
+          // console.log(i, o)
           codegen({ hoists: o.childIdent, observed, nodeList })
+        }
       }
     }
   }
@@ -92,6 +94,9 @@ export function walker(ast: File, imports: string[]): WalkParse {
   const observed: Observe = {}
 
   const hoists: Set<string> = new Set()
+
+  const isBlock: boolean[] = []
+  const blokList: string[] = []
     ; (_walk as any)(ast, {
     enter(node: Node, parent?: Node) {
       if (parent) {
@@ -99,20 +104,34 @@ export function walker(ast: File, imports: string[]): WalkParse {
         node.childIdent = parent.childIdent
       }
 
+      if (isBlockStatement(node))
+        isBlock.push(true)
+        // console.log(isBlock)
+
       if (isIdentifier(node)) {
         if (imports.includes(node.name)) {
           node.mark = true
           parent!.mark = true
-        } else if (node.name.startsWith('$')) {
+        }
+        else if (node.name.startsWith('$')) {
           if (parent?.mark) {
             // push into hoist list
             hoists.add(node.name)
           } else {
-            // push into observed list
-            observed[node.name] = observed[node.name] || { node: undefined }
-            node.observed = true
-            node!.childIdent = parent?.childIdent || (new Set<string>())
-            node?.childIdent.add(node.name)
+            const inBlock = isBlock.at(-1)
+            if ((isBlock.length >= 1 && inBlock && parent && (isFunctionDeclaration(parent) || isVariableDeclarator(parent)))) {
+              blokList.push(node.name)
+            } else {
+              if ((inBlock && !blokList.includes(node.name)) || isBlock.length === 0) {
+                // push into observed list
+                // console.log(inBlock, node, blokList)
+                observed[node.name] = observed[node.name] || { node: undefined }
+                node.observed = true
+
+                node!.childIdent = parent?.childIdent || (new Set<string>())
+                node?.childIdent.add(node.name)
+              }
+            }
           }
         }
       }
@@ -123,6 +142,7 @@ export function walker(ast: File, imports: string[]): WalkParse {
           node.mark = true
           nodeList.add(node)
         } else if (isIdentifier(node.id) && node.id.observed) {
+          console.log(node.id.name)
           node.observed = true
           observed[node.id.name].node = observed[node.id.name].node || []
           observed[node.id.name].node?.push(node)
@@ -144,11 +164,19 @@ export function walker(ast: File, imports: string[]): WalkParse {
           }
         }
       }
+      if (isBlockStatement(node)) {
+        if (isBlock.length === 1)
+          blokList.length = 0
+        isBlock.pop()
+      }
 
-      if (parent && node.childIdent)
-        parent.childIdent = node.childIdent
+      if (parent && node.childIdent) {
+        if (!((isFunctionDeclaration(node) || isVariableDeclaration(node)) && isBlock.length === 0))
+          parent.childIdent = node.childIdent
+      }
     },
   })
+  // console.log(456, hoists, observed)
 
   return {
     nodeList,
@@ -162,9 +190,6 @@ function parse(source: string, importOption: ImportBinding[]): string {
   const importedList: string[] = importOption.map(i => i.imported)
   const ast = babelParse(source, { sourceType: 'module' })
   const w = walker(ast, importedList)
-  console.log(w.hoists, w.observed)
-
-  // to generate
   codegen(w)
 
   ast.program.body = ([...w.nodeList] as any[])

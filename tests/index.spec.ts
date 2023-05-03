@@ -53,7 +53,6 @@ describe('transform', () => {
       const $useFun = () => {
         $useTT();
       };
-      function $useOther() {}
       function $useTT() {
         function $useProps() {
           console.log(1);
@@ -61,15 +60,7 @@ describe('transform', () => {
         $useProps();
         $useOther();
       }
-      function $useProps() {
-        console.log(1);
-      }
-      function $useFoo() {
-        console.log(1);
-      }
-      function $useProps() {
-        console.log(props.foo);
-      }"
+      function $useOther() {}"
     `)
   })
 })

@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { $useArrow, $useFun, $useOther, useNormal } from './index'
+import { $useArrow, $useFun, useNormal } from './index'
 
 useNormal()
-$useOther()
 $useArrow()
 $useFun()
 </script>

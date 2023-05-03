@@ -1,15 +1,9 @@
-const props = defineProps({
-  foo: String,
-})
-
-function $useArrow() {
-}
+const $props = defineProps(['foo'])
 
 function $useTT() {
   function $useProps() {
     console.log(1)
   }
-
   $useProps()
   $useOther()
 }
@@ -23,16 +17,9 @@ function $useOther() {
 }
 
 function $useProps() {
-  console.log(props.foo)
-}
-
-function useNormal() {
-  console.log('normal')
+  console.log($props.foo)
 }
 
 export {
-  useNormal,
-  $useOther,
-  $useArrow,
   $useFun,
 }

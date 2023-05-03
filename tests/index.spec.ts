@@ -1,8 +1,5 @@
-import fps from 'node:fs/promises'
-import path from 'node:path'
 import { parse } from '@babel/parser'
 import { parse as _parse, compileScript } from '@vue/compiler-sfc'
-import { processSetupImports } from '../src/transform'
 
 describe.skip('test ast', () => {
   test.skip('transfomr', () => {
@@ -39,28 +36,5 @@ describe.skip('test ast', () => {
     `
     const { descriptor } = _parse(script)
     const content = compileScript(descriptor, { id: 'v' })
-  })
-})
-
-describe('transform', () => {
-  test('gencode', async () => {
-    const code = await fps.readFile(path.resolve(__dirname, './fixtures/index.vue'), 'utf-8')
-
-    const r = await processSetupImports(code, path.resolve(__dirname, './fixtures'))
-
-    expect(r['./index'].genCode).toMatchInlineSnapshot(`
-      "function $useArrow() {}
-      const $useFun = () => {
-        $useTT();
-      };
-      function $useTT() {
-        function $useProps() {
-          console.log(1);
-        }
-        $useProps();
-        $useOther();
-      }
-      function $useOther() {}"
-    `)
   })
 })

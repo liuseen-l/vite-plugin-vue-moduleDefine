@@ -109,6 +109,8 @@ export function walker(ast: File, imports: string[]): WalkParse {
         // console.log(isBlock)
 
       if (isIdentifier(node)) {
+        // console.log(node);
+
         if (imports.includes(node.name)) {
           node.mark = true
           parent!.mark = true
@@ -142,7 +144,7 @@ export function walker(ast: File, imports: string[]): WalkParse {
           node.mark = true
           nodeList.add(node)
         } else if (isIdentifier(node.id) && node.id.observed) {
-          console.log(node.id.name)
+          // console.log(node.id.name)
           node.observed = true
           observed[node.id.name].node = observed[node.id.name].node || []
           observed[node.id.name].node?.push(node)

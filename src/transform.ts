@@ -1,11 +1,22 @@
 import path from 'node:path'
-import fs from 'node:fs/promises'
+import fsp from 'node:fs/promises'
 import type { ParseResult } from '@babel/parser'
-import { parse as baseParse } from '@babel/parser'
-import generate from '@babel/generator'
-import { walk } from 'estree-walker'
+import { parse as bableParse } from '@babel/parser'
+import { walk as _walk } from 'estree-walker'
 import { parse as _parse, compileScript } from '@vue/compiler-sfc'
-import type * as _babel_types from '@babel/types'
+import type { File, Node as _Node } from '@babel/types'
+import generate from '@babel/generator'
+import type { TreeMark } from '../utils'
+import { isFunctionDeclaration, isIdentifier, isVariableDeclaration, isVariableDeclarator } from '../utils'
+
+type Node = _Node & TreeMark
+
+interface Result {
+  [key: string]: {
+    genCode: string
+    imports: ImportBinding[]
+  }
+}
 
 const reg = /defineProps\(([.\r\b\s\S\n]*)\)/
 
@@ -18,57 +29,130 @@ interface ImportBinding {
   isUsedInTemplate: boolean
 }
 
-async function processSetupImports(source: string, id: string): Promise<void> {
+export async function processSetupImports(source: string, id: string): Promise<Result> {
   const { descriptor } = _parse(source)
   const imports = compileScript(descriptor, { id: 'v' }).imports!
   // to match the import with '.' or '..'
   const matchImports: {
     [k: string]: ImportBinding[]
   } = {}
+
   for (const key of Object.keys(imports)) {
     const source = imports[key].source
-    if (imports[key].isFromSetup && source.startsWith('.')) {
+    // setup script，local file and identifier start with $
+    if (imports[key].isFromSetup && source.startsWith('.') && key.startsWith('$')) {
       matchImports[source] = matchImports[source] || []
       matchImports[source].push(imports[key])
     }
   }
 
+  const results: Result = {}
+
   for (const resolvePath of Object.keys(matchImports)) {
-    const content = await fs.readFile(path.resolve(id, resolvePath), 'utf-8')
-    if (content.match(reg))
-      compile(content, matchImports[resolvePath])
+    const content = await fsp.readFile(path.resolve(id, `${resolvePath}.ts`), 'utf-8')
+    if (content.match(reg)) {
+      const genCode = parse(content, matchImports[resolvePath])
+      results[resolvePath] = { imports: matchImports[resolvePath], genCode }
+    }
   }
+  return results
 }
 
-function generator(ast: ParseResult<_babel_types.File>): string {
+function codegen(ast: ParseResult<File>, res: WalkParse): string {
+  const { hoists, observed, nodeList } = res
+  for (const i of hoists)
+    nodeList.push(...(observed[i].node as Node[]))
+  ast.program.body = (nodeList as any[])
   const generation = generate(ast)
   return generation.code
 }
 
-function parse(source: string, importOption: ImportBinding[]) {
-  const localList: string[] = importOption.map(i => i.local)
-  const importedList: string[] = importOption.map(i => i.imported)
-  const ast = baseParse(source)
-    ; (walk as any)(ast, {
+interface Observe {
+  [key: string]: {
+    node?: Node[]
+  }
+}
+
+interface WalkParse {
+  nodeList: Node[]
+  hoists: string[]
+  observed: Observe
+}
+export function walker(ast: File, imports: string[]): WalkParse {
+  const nodeList: Node[] = []
+
+  const observed: Observe = {}
+
+  const hoists: Set<string> = new Set()
+    ; (_walk as any)(ast, {
     enter(node: Node, parent?: Node) {
-      // some code happens
-      // console.log('enter', node, parent)
+      if (parent)
+        node.mark = parent.mark
+
+      if (isIdentifier(node)) {
+        if (imports.includes(node.name)) {
+          node.mark = true
+          parent!.mark = true
+        } else if (node.name.startsWith('$')) {
+          if (parent?.mark) {
+            // push into hoist list
+            hoists.add(node.name)
+          } else {
+            // push into observed list
+            observed[node.name] = observed[node.name] || { node: undefined }
+            node.observed = true
+          }
+        }
+      }
     },
     leave(node: Node, parent?: Node) {
-      // some code happens
-      // console.log('leave', node, parent)
+      if (isFunctionDeclaration(node)) {
+        if (isIdentifier(node.id) && node.id.mark) {
+          node.mark = true
+          nodeList.push(node)
+        } else if (isIdentifier(node.id) && node.id.observed) {
+          node.observed = true
+          observed[node.id.name].node = observed[node.id.name].node || []
+          observed[node.id.name].node?.push(node)
+        }
+      } else if (isVariableDeclarator(node)) {
+        if (isIdentifier(node.id) && node.id.mark)
+          node.mark = true
+        if (isIdentifier(node.id) && node.id.observed)
+          node.observed = true
+      } else if (isVariableDeclaration(node)) {
+        const nodeTemp = node.declarations[0]
+        if (isVariableDeclaration(node) && isVariableDeclarator(nodeTemp) && nodeTemp.mark) {
+          nodeList.push(node)
+        } else if (isVariableDeclaration(node) && isVariableDeclarator(nodeTemp) && nodeTemp.observed) {
+          if (isIdentifier(nodeTemp.id) && nodeTemp.id.observed) {
+            node.observed = true
+            observed[nodeTemp.id.name].node = observed[nodeTemp.id.name].node || []
+            observed[nodeTemp.id.name].node?.push(node)
+          }
+        }
+      }
     },
   })
-  generator(ast)
+  // console.log(hoists, observed)
+
+  return {
+    nodeList,
+    hoists: [...hoists],
+    observed,
+  }
 }
-function compile(source: string, importOption: ImportBinding[]) {
-  const ast = parse(source, importOption)
+
+function parse(source: string, importOption: ImportBinding[]): string {
+  const localList: string[] = importOption.map(i => i.local)
+  const importedList: string[] = importOption.map(i => i.imported)
+  const ast = bableParse(source, { sourceType: 'module' })
+  const w = walker(ast, importedList)
+  return codegen(ast, w)
 }
 
 export async function transform(code: string, id: string) {
   if (id.endsWith('vue')) {
-    // 拿到当前 vue 文件 setup 中导入的所有的ts文件
     const res = await processSetupImports(code, id)
-    // 循环遍历
   }
 }

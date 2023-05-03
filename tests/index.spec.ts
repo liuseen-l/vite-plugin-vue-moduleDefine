@@ -1,7 +1,10 @@
-import { parse } from 'acorn'
+import fps from 'node:fs/promises'
+import path from 'node:path'
+import { parse } from '@babel/parser'
 import { parse as _parse, compileScript } from '@vue/compiler-sfc'
+import { processSetupImports } from '../src/transform'
 
-describe('test ast', () => {
+describe.skip('test ast', () => {
   test.skip('transfomr', () => {
     const script = `
     import {a} from 'vue'
@@ -15,9 +18,9 @@ describe('test ast', () => {
     }
     
     `
-    const ast = parse(script, { ecmaVersion: 'latest', sourceType: 'module' })
+    const ast = parse(script, { sourceType: 'module' })
   })
-  test('transfomr', () => {
+  test.skip('transfomr', () => {
     const script = `
     <script setup>
     import {d as t ,z}from './vue'
@@ -36,5 +39,15 @@ describe('test ast', () => {
     `
     const { descriptor } = _parse(script)
     const content = compileScript(descriptor, { id: 'v' })
+  })
+})
+
+describe('transform', () => {
+  test('gencode', async () => {
+    const code = await fps.readFile(path.resolve(__dirname, './fixtures/index.vue'), 'utf-8')
+
+    const r = await processSetupImports(code, path.resolve(__dirname, './fixtures'))
+
+    // expect(r['./index'].genCode).toMatchInlineSnapshot()
   })
 })

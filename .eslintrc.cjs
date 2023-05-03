@@ -38,6 +38,7 @@ module.exports = {
     'import/no-named-as-default': 'off',
     'import/no-named-as-default-member': 'off',
     '@typescript-eslint/brace-style': 'off',
+    'antfu/top-level-function': 'off',
   },
   overrides: [
     {

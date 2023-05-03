@@ -5,13 +5,6 @@ const restricted = [
   '@vue/composition-api',
   '..',
   '../..',
-  resolve(__dirname, 'packages/core/index.ts'),
-  resolve(__dirname, 'packages/shared/index.ts'),
-  {
-    name: 'vue-demi',
-    importNames: ['onMounted', 'onUnmounted'],
-    message: 'Use tryOnMounted and tryOnScopeDispose instead.',
-  },
 ]
 module.exports = {
   root: true,
@@ -32,6 +25,7 @@ module.exports = {
         paths: restricted,
       },
     ],
+    'no-console': 'off',
     'node/no-callback-literal': 'off',
     'import/namespace': 'off',
     'import/default': 'off',

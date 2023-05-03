@@ -48,6 +48,28 @@ describe('transform', () => {
 
     const r = await processSetupImports(code, path.resolve(__dirname, './fixtures'))
 
-    // expect(r['./index'].genCode).toMatchInlineSnapshot()
+    expect(r['./index'].genCode).toMatchInlineSnapshot(`
+      "function $useArrow() {}
+      const $useFun = () => {
+        $useTT();
+      };
+      function $useOther() {}
+      function $useTT() {
+        function $useProps() {
+          console.log(1);
+        }
+        $useProps();
+        $useOther();
+      }
+      function $useProps() {
+        console.log(1);
+      }
+      function $useFoo() {
+        console.log(1);
+      }
+      function $useProps() {
+        console.log(props.foo);
+      }"
+    `)
   })
 })

@@ -3,7 +3,7 @@ import type { BlockStatement, FunctionDeclaration, Identifier, VariableDeclarati
 export interface TreeMark {
   mark?: boolean
   observed?: boolean
-  childIdent?: string
+  childIdent?: Set<string>
 }
 
 export function isFunctionDeclaration(node: any): node is FunctionDeclaration & TreeMark {

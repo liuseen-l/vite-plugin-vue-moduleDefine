@@ -30,10 +30,6 @@ function useNormal() {
   console.log('normal')
 }
 
-function $useFoo() {
-  console.log(1)
-}
-
 export {
   useNormal,
   $useOther,

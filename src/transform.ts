@@ -1,7 +1,6 @@
 import path from 'node:path'
 import fsp from 'node:fs/promises'
-import type { ParseResult } from '@babel/parser'
-import { parse as bableParse } from '@babel/parser'
+import { parse as babelParse } from '@babel/parser'
 import { walk as _walk } from 'estree-walker'
 import { parse as _parse, compileScript } from '@vue/compiler-sfc'
 import type { File, Node as _Node } from '@babel/types'
@@ -31,6 +30,7 @@ interface ImportBinding {
 
 export async function processSetupImports(source: string, id: string): Promise<Result> {
   const { descriptor } = _parse(source)
+
   const imports = compileScript(descriptor, { id: 'v' }).imports!
   // to match the import with '.' or '..'
   const matchImports: {
@@ -58,13 +58,20 @@ export async function processSetupImports(source: string, id: string): Promise<R
   return results
 }
 
-function codegen(ast: ParseResult<File>, res: WalkParse): string {
+function codegen(res: WalkParse) {
   const { hoists, observed, nodeList } = res
-  for (const i of hoists)
-    nodeList.push(...(observed[i].node as Node[]))
-  ast.program.body = (nodeList as any[])
-  const generation = generate(ast)
-  return generation.code
+  for (const i of hoists) {
+    // console.log(...(observed[i].node as Node[]))
+    const observeList = (observed[i].node as Node[])
+    for (const o of observeList) {
+      nodeList.add(o)
+      if (o.childIdent) {
+        o.childIdent.delete(i)
+        if (o.childIdent.size > 0)
+          codegen({ hoists: o.childIdent, observed, nodeList })
+      }
+    }
+  }
 }
 
 interface Observe {
@@ -74,20 +81,23 @@ interface Observe {
 }
 
 interface WalkParse {
-  nodeList: Node[]
-  hoists: string[]
+  nodeList: Set<Node>
+  hoists: Set<string>
   observed: Observe
 }
+
 export function walker(ast: File, imports: string[]): WalkParse {
-  const nodeList: Node[] = []
+  const nodeList: Set<Node> = new Set()
 
   const observed: Observe = {}
 
   const hoists: Set<string> = new Set()
     ; (_walk as any)(ast, {
     enter(node: Node, parent?: Node) {
-      if (parent)
+      if (parent) {
         node.mark = parent.mark
+        node.childIdent = parent.childIdent
+      }
 
       if (isIdentifier(node)) {
         if (imports.includes(node.name)) {
@@ -101,6 +111,8 @@ export function walker(ast: File, imports: string[]): WalkParse {
             // push into observed list
             observed[node.name] = observed[node.name] || { node: undefined }
             node.observed = true
+            node!.childIdent = parent?.childIdent || (new Set<string>())
+            node?.childIdent.add(node.name)
           }
         }
       }
@@ -109,7 +121,7 @@ export function walker(ast: File, imports: string[]): WalkParse {
       if (isFunctionDeclaration(node)) {
         if (isIdentifier(node.id) && node.id.mark) {
           node.mark = true
-          nodeList.push(node)
+          nodeList.add(node)
         } else if (isIdentifier(node.id) && node.id.observed) {
           node.observed = true
           observed[node.id.name].node = observed[node.id.name].node || []
@@ -118,12 +130,12 @@ export function walker(ast: File, imports: string[]): WalkParse {
       } else if (isVariableDeclarator(node)) {
         if (isIdentifier(node.id) && node.id.mark)
           node.mark = true
-        if (isIdentifier(node.id) && node.id.observed)
+        else if (isIdentifier(node.id) && node.id.observed)
           node.observed = true
       } else if (isVariableDeclaration(node)) {
         const nodeTemp = node.declarations[0]
         if (isVariableDeclaration(node) && isVariableDeclarator(nodeTemp) && nodeTemp.mark) {
-          nodeList.push(node)
+          nodeList.add(node)
         } else if (isVariableDeclaration(node) && isVariableDeclarator(nodeTemp) && nodeTemp.observed) {
           if (isIdentifier(nodeTemp.id) && nodeTemp.id.observed) {
             node.observed = true
@@ -132,13 +144,15 @@ export function walker(ast: File, imports: string[]): WalkParse {
           }
         }
       }
+
+      if (parent && node.childIdent)
+        parent.childIdent = node.childIdent
     },
   })
-  // console.log(hoists, observed)
 
   return {
     nodeList,
-    hoists: [...hoists],
+    hoists,
     observed,
   }
 }
@@ -146,9 +160,16 @@ export function walker(ast: File, imports: string[]): WalkParse {
 function parse(source: string, importOption: ImportBinding[]): string {
   const localList: string[] = importOption.map(i => i.local)
   const importedList: string[] = importOption.map(i => i.imported)
-  const ast = bableParse(source, { sourceType: 'module' })
+  const ast = babelParse(source, { sourceType: 'module' })
   const w = walker(ast, importedList)
-  return codegen(ast, w)
+  console.log(w.hoists, w.observed)
+
+  // to generate
+  codegen(w)
+
+  ast.program.body = ([...w.nodeList] as any[])
+  const generation = generate(ast)
+  return generation.code
 }
 
 export async function transform(code: string, id: string) {

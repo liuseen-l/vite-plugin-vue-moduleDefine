@@ -60,25 +60,15 @@ function $useArrow() {
   $useProps()
 }
 
-<<<<<<< HEAD
 function $useTT() {
   $useFoo()
 }
 
-=======
->>>>>>> 34befb7658b4f45777b93a8aca184babc1a1a2fa
 const $useFun = function () {
   $useProps()
 }
 
-<<<<<<< HEAD
 // observed
-=======
-function $useOther() {
-  $useProps()
-}
-
->>>>>>> 34befb7658b4f45777b93a8aca184babc1a1a2fa
 function $useProps() {
   console.log(props.foo)
 }
